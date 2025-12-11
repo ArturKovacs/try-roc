@@ -1,0 +1,17 @@
+{
+    "name": "Roc Lang Dev",
+    "image": "roclang/nightly-ubuntu-2204",
+    // Optional: forward ports or mount workspace
+    "remoteUser": "root",
+    // Install Roc VS Code extension
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ivandemchenko.roc-lang-unofficial"
+            ],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash"
+            }
+        }
+    }
+}
