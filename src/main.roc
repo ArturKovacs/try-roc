@@ -170,7 +170,7 @@ get_closest_hit = |ray|
                 else
                     [],
         )
-        |> List.sort_with(|a, b| Num.compare(b.dist, a.dist)) # closest first
+        |> List.sort_with(|a, b| Num.compare(a.dist, b.dist)) # closest first
         |> List.first
 
     when result is
