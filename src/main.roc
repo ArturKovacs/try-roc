@@ -158,7 +158,7 @@ final_image =
     )
     |> List.join
 
-get_closest_hit : Scene.Ray -> Result { dist : F32, sphere : Scene.Sphere } {}
+get_closest_hit : Scene.Ray -> Result { dist : F32, position: Math.Vec3, normal: Math.Vec3, sphere : Scene.Sphere } {}
 get_closest_hit = |ray|
     result =
         spheres
@@ -166,12 +166,23 @@ get_closest_hit = |ray|
             |sphere|
                 dist = Scene.intersect(ray, sphere)
                 if !Num.is_nan(dist) then
-                    [{ dist, sphere }]
+                    position = Math.vec_add(ray.start, Math.vec_scale(ray.dir, dist))
+                    normal = Math.vec_normalize(Math.vec_sub(position, sphere.pos))
+                    [{ dist, position, normal, sphere }]
                 else
-                    [],
+                    []
         )
-        |> List.sort_with(|a, b| Num.compare(a.dist, b.dist)) # closest first
-        |> List.first
+        |> List.walk(Err {}, |acc, curr|
+            when acc is
+                Err _ -> Ok curr
+                Ok best ->
+                    if curr.dist < best.dist then
+                        Ok curr
+                    else
+                        Ok best
+        )
+        # |> List.sort_with(|a, b| Num.compare(a.dist, b.dist)) # closest first
+        # |> List.first
 
     when result is
         Ok hit -> Ok hit
@@ -191,10 +202,9 @@ get_pixel_color_at = |x, y|
     scene_hit = get_closest_hit(camera_ray)
     when scene_hit is
         Ok hit ->
-            { dist, sphere } = hit
+            { dist, normal, position, sphere } = hit
             # Simple normal-based coloring
-            hit_point = Math.vec_add(camera_ray.start, Math.vec_scale(camera_ray.dir, dist))
-            normal = Math.vec_normalize(Math.vec_sub(hit_point, sphere.pos))
+            
             {
                 x: (normal.x + 1) * 0.5,
                 y: (normal.y + 1) * 0.5,
