@@ -46,6 +46,7 @@ main! = |_args|
 #
 # Stdout.line!("${joined}")
 
+
 Image : {
     width : U32,
     height : U32,
@@ -158,17 +159,17 @@ final_image =
     )
     |> List.join
 
-get_closest_hit : Scene.Ray -> Result { dist : F32, position: Math.Vec3, normal: Math.Vec3, sphere : Scene.Sphere } {}
+get_closest_hit : Scene.Ray -> Result Scene.HitInfo {}
 get_closest_hit = |ray|
     result =
         spheres
         |> List.join_map(
             |sphere|
-                dist = Scene.intersect(ray, sphere)
+                dist = Scene.intersect_sphere(ray, sphere)
                 if !Num.is_nan(dist) then
                     position = Math.vec_add(ray.start, Math.vec_scale(ray.dir, dist))
                     normal = Math.vec_normalize(Math.vec_sub(position, sphere.pos))
-                    [{ dist, position, normal, sphere }]
+                    [{ dist, position, normal }]
                 else
                     []
         )
@@ -202,7 +203,7 @@ get_pixel_color_at = |x, y|
     scene_hit = get_closest_hit(camera_ray)
     when scene_hit is
         Ok hit ->
-            { dist, normal, position, sphere } = hit
+            { dist, normal, position } = hit
             # Simple normal-based coloring
             
             {
